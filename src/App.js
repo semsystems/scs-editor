@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import { Treebeard, decorators } from 'react-treebeard';
 import { includes } from 'lodash'
 import { Header, Div } from './Header'
-import FileTree from './Utilities/FileTree';
+import FileInfo from './Utilities/FileInfo';
 
 const remote = window.require('electron').remote;
 const { dialog } = remote;
@@ -11,9 +11,12 @@ class App extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      data: { id: 1,
-      children: []},
-      fileTree: null
+      data: {
+        name: 'root',
+        toggled: false,
+        children: [],
+      },
+      fileInfo: null
     };
     this.onToggle = this.onToggle.bind(this);
     this.handleOpenFolder = this.handleOpenFolder.bind(this);
@@ -30,25 +33,21 @@ class App extends PureComponent {
       node.toggled = toggled;
       node.active = false;
     }
-    this.setState(() => ({cursor: node, data: Object.assign({}, data)}));
+    this.setState(() => ({ cursor: node, data: Object.assign({}, data) }));
   }
 
   handleOpenFolder = () => {
     const directory = dialog.showOpenDialog({ properties: ['openDirectory']});
     if (directory && directory[0]){
-      const fileTree = new FileTree(directory[0]);
-      fileTree.build();
-      this.state.data.toggled = false;
-      this.state.data.name = fileTree.path;
-      this.state.data.children = fileTree.children;
-      this.setState({fileTree});
-      //console.log(this.state.data.children.sort((a, b) => a.name > b.name ? 1 : -1));
+      const fileInfo = new FileInfo(directory[0]);
+      fileInfo.readDir(directory[0]);
+      this.setState(() => ({ fileInfo, data: {children: fileInfo.children, name: fileInfo.path} }));
     }
   };
 
   render()  {
-    const { data, fileTree } = this.state;
-    const fileData = fileTree ? <></> : null;
+    const { data, fileInfo } = this.state;
+    const fileData = fileInfo ? <></> : null;
     return (
       <div>
         {fileData ? (

@@ -7,10 +7,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+svg {
+  font-size: 10px;
 }
 
 .file-tree > ul{
@@ -41,13 +43,14 @@ code {
 li {
   white-space: nowrap;
   overflow: hidden;
+  font-size: 12px;
 }
 
 .file-tree {
+  height: 100% !important;
   position: absolute;
   padding-top: 8px;
   width: 25%;
-  height: 100%;
   background-color: #21252B;
   -moz-user-select: none;
   user-select: none;
