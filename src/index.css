@@ -25,9 +25,6 @@ svg {
   overflow-y: auto;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  -moz-overflow-scrolling: touch;
-  -ms-overflow-scrolling: touch;
-  -o-overflow-scrolling: touch;
   overflow-scrolling: touch;
 }
 .file-tree > ul::-webkit-scrollbar {
@@ -47,19 +44,37 @@ li {
 }
 
 .file-tree {
-  height: 100% !important;
   position: absolute;
+  height: 100%;
+  width: 15%;
   padding-top: 8px;
-  width: 25%;
   background-color: #21252B;
   -moz-user-select: none;
   user-select: none;
 }
 
 .code-space {
+  position: absolute;
   margin-left: 25.5%;
 }
 
-.open-path {
-  margin: 10px;
+.popup {
+  z-index: 9;
+  background-color: #21252B;
+  text-align: left;
+  min-height: 100%;
+  min-width: 3%;
+  max-height: 100%;
+  max-width: 80%;
+  overflow-x: auto;
+}
+
+.popup .resizer-right {
+  width: 10px;
+  height: 100%;
+  background: transparent;
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  cursor: w-resize;
 }

@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import { Treebeard, decorators } from 'react-treebeard';
 import { includes } from 'lodash'
 import { Header, Div } from './Header'
-import FileInfo from './Utilities/FileInfo';
+import FileTree from './Utilities/FileTree';
 
 const remote = window.require('electron').remote;
 const { dialog } = remote;
@@ -12,12 +12,10 @@ class App extends PureComponent {
     super(props);
     this.state = {
       data: {
-        name: 'root',
+        name: 'empty',
         toggled: false,
         children: [],
-      },
-      fileInfo: null
-    };
+      }};
     this.onToggle = this.onToggle.bind(this);
     this.handleOpenFolder = this.handleOpenFolder.bind(this);
   }
@@ -39,35 +37,28 @@ class App extends PureComponent {
   handleOpenFolder = () => {
     const directory = dialog.showOpenDialog({ properties: ['openDirectory']});
     if (directory && directory[0]){
-      const fileInfo = new FileInfo(directory[0]);
-      fileInfo.readDir(directory[0]);
-      this.setState(() => ({ fileInfo, data: {children: fileInfo.children, name: fileInfo.path} }));
+      const fileTree = new FileTree(directory[0]);
+      fileTree.readDir(directory[0]);
+      this.setState(() => ({ data: {children: fileTree.children, name: fileTree.path} }));
     }
   };
 
   render()  {
-    const { data, fileInfo } = this.state;
-    const fileData = fileInfo ? <></> : null;
+    const { data } = this.state;
     return (
       <div>
-        {fileData ? (
           <div>
-          <Div className='file-tree'>
-            <Treebeard
-              data={data}
-              onToggle={this.onToggle}
-              decorators={{...decorators, Header}}
-            />
-          </Div>
-            <div id="filetree" className='code-space'>
+              <Div id="element" className='file-tree popup'>
+                <Treebeard
+                  data={data}
+                  onToggle={this.onToggle}
+                  decorators={{...decorators, Header}}
+                />
+              </Div>
+            <div className='code-space'>
               <button className='btn btn-outline-secondary' onClick={this.handleOpenFolder}>Open Folder</button>
             </div>
           </div>
-        ) : (
-          <div className='open-path'>
-            <button className='btn btn-outline-secondary' onClick={this.handleOpenFolder}>Open Folder</button>
-          </div>
-          )}
       </div>
     );
   }

@@ -1,24 +1,22 @@
 const remote = window.require('electron').remote;
 const electronFs = remote.require('fs');
 
-export default class FileInfo {
+export default class FileTree {
   constructor(path, name = null) {
     this.path = path;
     this.name = name;
     this.children = [];
   }
-  
-  readDir(path) {
-    const fileArray = [];
 
+  readDir = (path) => {
+    const fileArray = [];
     electronFs.readdir(path, (err, items) => {
       try {
         items.forEach((file) => {
-          const fileData = new FileInfo(`${path}\\${file}`, file);
-          const stat = electronFs.statSync(fileData.path);
+          const stat = electronFs.statSync(`${path}/${file}`);
           if (stat.isDirectory()) {
-            fileData.children = this.readDir(fileData.path);
-            fileArray.push({name: file, children: fileData.children, path});
+            this.children = this.readDir(`${path}/${file}`);
+            fileArray.push({name: file, children: this.children, path});
           } else if (stat.isFile() && (/\.scs$/ig.test(file) || /\.gwf$/ig.test(file))) {
             fileArray.push({name: file, path});
           }
