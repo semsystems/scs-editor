@@ -15,7 +15,8 @@ class App extends PureComponent {
         name: 'empty',
         toggled: false,
         children: [],
-      }};
+      }
+    };
     this.onToggle = this.onToggle.bind(this);
     this.handleOpenFolder = this.handleOpenFolder.bind(this);
   }
@@ -45,20 +46,21 @@ class App extends PureComponent {
 
   render()  {
     const { data } = this.state;
+    console.log(!!data.children.length);
     return (
       <div>
+        <div>
+          <Div id="element" className='file-tree popup'>
+            <Treebeard
+              data={data}
+              onToggle={this.onToggle}
+              decorators={{...decorators, Header}}
+            />
+          </Div>
           <div>
-              <Div id="element" className='file-tree popup'>
-                <Treebeard
-                  data={data}
-                  onToggle={this.onToggle}
-                  decorators={{...decorators, Header}}
-                />
-              </Div>
-            <div className='code-space'>
-              <button className='btn btn-outline-secondary' onClick={this.handleOpenFolder}>Open Folder</button>
-            </div>
+            <button className='btn btn-outline-secondary open-directory' onClick={this.handleOpenFolder}>Open Directory</button>
           </div>
+        </div>
       </div>
     );
   }
