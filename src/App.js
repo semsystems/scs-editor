@@ -46,7 +46,7 @@ class App extends PureComponent {
 
   render()  {
     const { data } = this.state;
-    console.log(!!data.children.length);
+    //console.log(!!data.children.length);
     return (
       <div>
         <div>
