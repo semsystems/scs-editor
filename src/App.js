@@ -6,10 +6,9 @@ import { Header, Div } from './Header';
 import FileTree from './Utilities/FileTree';
 import {Folder, Menu, Save, X, Plus, FileText} from 'react-feather';
 import {config, language, scsTheme, getCompletionProvider} from './Utilities/scs-support';
-
+import hotkeys from 'hotkeys-js';
 const remote = window.require('electron').remote;
 const fs = remote.require('fs');
-
 const { dialog } = remote;
 
 const isScsFile = (file) => (/\.scs$/ig.test(file) || /\.gwf$/ig.test(file));
@@ -20,17 +19,6 @@ const editorWillMount = monaco => {
   monaco.languages.setMonarchTokensProvider('scs', language);
   monaco.languages.setLanguageConfiguration('scs', config);
   monaco.editor.defineTheme('scs', scsTheme);
-}
-
-const isFileExistOnTabs = (name = '', tabs = []) => {
-  let ans = false;
-  tabs.forEach((e) => {
-    if (e.filename === name) {
-      ans = true
-    }
-  })
-
-  return ans;
 }
 
 class App extends React.Component {
@@ -63,6 +51,13 @@ class App extends React.Component {
     cb(data);
   };
 
+  componentDidMount() {
+    hotkeys('ctrl+s', (function() {
+      console.log(this.state.filepath, this.state.content)
+      this.writeFile(this.state.filepath, this.state.content);
+    }).bind(this));
+  }
+
   saveFile = () => {
     dialog.showSaveDialog((fileName) => {
       if (fileName === undefined){
@@ -80,6 +75,17 @@ class App extends React.Component {
     }); 
   }
 
+  writeFile(path, content) {
+    console.log(path, content);
+    fs.writeFile(path, content, (err) => {
+      if (err) {
+        alert("An error ocurred creating the file "+ err.message)
+      }
+
+      alert("The file has been succesfully saved");
+    });
+  }
+
   onToggle(node, toggled) {
     const {data, cursor, currentTab} = this.state;
 
@@ -87,6 +93,7 @@ class App extends React.Component {
         const filepath = node.path + '/' + node.name;
         this.getFileContent(filepath, (data) => {
           this.setState({
+            filepath,
             content: data
           });
         });
@@ -111,7 +118,7 @@ class App extends React.Component {
       filters: [{ name: 'All Files', extensions: ['scs', 'scsi', 'gwf'] }]
     })
 
-    this.getFileContent(files[0], (content) => this.setState({content}) )
+    this.getFileContent(files[0], (content) => this.setState({content, filepath: files[0]}) )
   }
 
   handleOpenFolder = () => {
@@ -156,43 +163,12 @@ class App extends React.Component {
     console.log(tabIndex);
   }
 
-  addTab = () => {
-    this.setState((state) => {
-      return state.tabs.push({
-        filename: "New file",
-        content: "Your code here, you can click to file on the Treeview for uploading here"
-      })
-    })
-  }
-
-  renderTabs = () => {
-    const {currentTab, tabs} = this.state;
-
-    const render = tabs.map((e, i) => 
-      <div className="tab-item">
-        {e.filename}
-        <X />
-      </div>
-    )
-
-    return (
-      <div className="tabs-panel">
-        {render}
-        <button className="add-tab"
-          onClick={this.addTab}>
-          <Plus />
-        </button>
-      </div>
-    )
-  }
-
   render()  {
-    const { data, isOpenTreeView, content } = this.state;
+    const { data, isOpenTreeView, content, filepath } = this.state;
 
     const treeSize = isOpenTreeView ? 200 : 0;
 
     window.onresize = () => {
-      document.getElementById("")
       this.setState({
         window: {
           h: window.innerHeight,
@@ -209,6 +185,7 @@ class App extends React.Component {
           <Menu
             color="#9da5ab" 
             size={32}
+            alt="Close/Open the Tree"
           />
         </button>
         <button className="toolItem"
