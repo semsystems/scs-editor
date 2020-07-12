@@ -11,6 +11,7 @@ export default class FileTree {
   readDir = (path) => {
     const fileArray = [];
     electronFs.readdir(path, (err, items) => {
+      console.log(path);
       try {
         items.forEach((file) => {
           const stat = electronFs.statSync(`${path}/${file}`);

@@ -5,21 +5,29 @@
   "dependencies": {
     "@emotion/core": "^10.0.10",
     "@emotion/styled": "^10.0.10",
+    "@monaco-editor/react": "^3.4.1",
     "dree": "^2.4.14",
     "electron": "^4.1.0",
+    "electron-debug": "^3.1.0",
     "lodash": "latest",
+    "monaco-editor": "^0.20.0",
+    "monaco-editor-core": "^0.20.0",
+    "monaco-editor-webpack-plugin": "^1.9.0",
     "prop-types": "^15.7.2",
+    "re-resizable": "^6.5.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-feather": "^2.0.8",
+    "react-monaco-editor": "^0.37.0",
+    "react-resizer": "^0.2.0",
     "react-scripts": "2.1.8",
     "react-treebeard": "^3.2.4"
   },
   "main": "src/electron.js",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "start": "react-app-rewired start",
+    "build": "rreact-app-rewired build",
+    "test": "react-app-rewired test",
     "electron": "electron ."
   },
   "eslintConfig": {
@@ -32,6 +40,7 @@
     "not op_mini all"
   ],
   "devDependencies": {
-    "craco": "0.0.3"
+    "craco": "0.0.3",
+    "react-app-rewired": "^2.1.6"
   }
 }

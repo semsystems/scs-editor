@@ -1,27 +1,97 @@
-import React, { PureComponent } from 'react';
+import React from 'react';
 import { Treebeard, decorators } from 'react-treebeard';
-import { includes } from 'lodash'
-import { Header, Div } from './Header'
+import _, { includes } from 'lodash';
+import MonacoEditor from 'react-monaco-editor';
+import { Header, Div } from './Header';
 import FileTree from './Utilities/FileTree';
+import {Folder, Menu, Save, X, Plus, FileText} from 'react-feather';
+import {config, language, scsTheme, getCompletionProvider} from './Utilities/scs-support';
 
 const remote = window.require('electron').remote;
+const fs = remote.require('fs');
+
 const { dialog } = remote;
 
-class App extends PureComponent {
+const isScsFile = (file) => (/\.scs$/ig.test(file) || /\.gwf$/ig.test(file));
+
+const editorWillMount = monaco => {
+  monaco.languages.register({ id: 'scs' });
+  monaco.languages.registerCompletionItemProvider('scs', getCompletionProvider(monaco));
+  monaco.languages.setMonarchTokensProvider('scs', language);
+  monaco.languages.setLanguageConfiguration('scs', config);
+  monaco.editor.defineTheme('scs', scsTheme);
+}
+
+const isFileExistOnTabs = (name = '', tabs = []) => {
+  let ans = false;
+  tabs.forEach((e) => {
+    if (e.filename === name) {
+      ans = true
+    }
+  })
+
+  return ans;
+}
+
+class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      isOpenTreeView: true,
+      file: '',
+      content: '',
+      window: {
+        h: window.innerHeight,
+        w: window.innerWidth
+      },
+      size: 200,
       data: {
         name: 'empty',
         toggled: false,
         children: [],
-      }};
+      },
+      tabs: [],
+      currentTab: 0
+    };
+
     this.onToggle = this.onToggle.bind(this);
     this.handleOpenFolder = this.handleOpenFolder.bind(this);
   }
 
+  getFileContent = (filepath, cb) => {
+    const data = fs.readFileSync(filepath, {encoding:'utf8'});
+    cb(data);
+  };
+
+  saveFile = () => {
+    dialog.showSaveDialog((fileName) => {
+      if (fileName === undefined){
+        console.log("You didn't save the file");
+        return;
+      }
+  
+      fs.writeFile(fileName, this.state.content, (err) => {
+          if (err) {
+            alert("An error ocurred creating the file "+ err.message)
+          }
+
+          alert("The file has been succesfully saved");
+      });
+    }); 
+  }
+
   onToggle(node, toggled) {
-    const {cursor, data} = this.state;
+    const {data, cursor, currentTab} = this.state;
+
+    if (isScsFile(node.name)) {
+        const filepath = node.path + '/' + node.name;
+        this.getFileContent(filepath, (data) => {
+          this.setState({
+            content: data
+          });
+        });
+      }
+
     if (cursor) {
       if (!includes(cursor.children, node)) cursor.active = false
     }
@@ -32,10 +102,21 @@ class App extends PureComponent {
       node.active = false;
     }
     this.setState(() => ({ cursor: node, data: Object.assign({}, data) }));
+
+  }
+
+  openFile = () => {
+    const files = dialog.showOpenDialog({
+      properties: ['openFile'],
+      filters: [{ name: 'All Files', extensions: ['scs', 'scsi', 'gwf'] }]
+    })
+
+    this.getFileContent(files[0], (content) => this.setState({content}) )
   }
 
   handleOpenFolder = () => {
     const directory = dialog.showOpenDialog({ properties: ['openDirectory']});
+    console.log(directory);
     if (directory && directory[0]){
       const fileTree = new FileTree(directory[0]);
       fileTree.readDir(directory[0]);
@@ -43,22 +124,138 @@ class App extends PureComponent {
     }
   };
 
-  render()  {
-    const { data } = this.state;
+  handleTreeView = () => {
+    console.log(!!this.state.isOpenTreeView);
+    this.setState((preState) => {
+      return {
+        isOpenTreeView: !preState.isOpenTreeView
+      }
+    })
+  }
+
+  editorDidMount(editor, monaco) {
+    console.log('editorDidMount', editor);
+    monaco.languages.register({ id: 'scs' });
+    monaco.languages.registerCompletionItemProvider('scs', getCompletionProvider(monaco));
+    monaco.languages.setMonarchTokensProvider('scs', language);
+    monaco.languages.setLanguageConfiguration('scs', config);
+    monaco.editor.defineTheme('scs', scsTheme);
+    console.log('monaco', monaco.languages.getLanguages());
+    editor.focus();
+  }
+
+  onChange(content, e) {
+    this.setState({
+      content
+    })
+  }
+
+  onTabClick = (tabIndex) => {
+    const {currentTab, tabs} = this.state;
+
+    console.log(tabIndex);
+  }
+
+  addTab = () => {
+    this.setState((state) => {
+      return state.tabs.push({
+        filename: "New file",
+        content: "Your code here, you can click to file on the Treeview for uploading here"
+      })
+    })
+  }
+
+  renderTabs = () => {
+    const {currentTab, tabs} = this.state;
+
+    const render = tabs.map((e, i) => 
+      <div className="tab-item">
+        {e.filename}
+        <X />
+      </div>
+    )
+
     return (
-      <div>
-          <div>
-              <Div id="element" className='file-tree popup'>
-                <Treebeard
-                  data={data}
-                  onToggle={this.onToggle}
-                  decorators={{...decorators, Header}}
-                />
-              </Div>
-            <div className='code-space'>
-              <button className='btn btn-outline-secondary' onClick={this.handleOpenFolder}>Open Folder</button>
-            </div>
-          </div>
+      <div className="tabs-panel">
+        {render}
+        <button className="add-tab"
+          onClick={this.addTab}>
+          <Plus />
+        </button>
+      </div>
+    )
+  }
+
+  render()  {
+    const { data, isOpenTreeView, content } = this.state;
+
+    const treeSize = isOpenTreeView ? 200 : 0;
+
+    window.onresize = () => {
+      document.getElementById("")
+      this.setState({
+        window: {
+          h: window.innerHeight,
+          w: window.innerWidth
+        }
+      })
+    }
+
+    return (
+      <div className="container">
+      <div className="tools-panel">
+        <button className="toolItem"
+          onClick={this.handleTreeView}>
+          <Menu
+            color="#9da5ab" 
+            size={32}
+          />
+        </button>
+        <button className="toolItem"
+          onClick={this.openFile}>
+          <FileText
+            color="#9da5ab" 
+            size={32}
+          />
+        </button>
+        <button className="toolItem"
+          onClick={this.handleOpenFolder}>
+          <Folder
+            color="#9da5ab" 
+            size={32}
+          />
+        </button>
+        <button className="toolItem"
+          onClick={this.saveFile}>
+          <Save
+            color="#9da5ab" 
+            size={32}
+          />
+        </button>
+      </div>
+        <Div id="element" className='file-tree' style={{
+          display: isOpenTreeView ? "block" : "none",
+          width: 300
+        }}>
+          <Treebeard
+            className='treeview'
+            data={data}
+            onToggle={this.onToggle}
+            decorators={{...decorators, Header}}
+          />
+        </Div>
+        <div>
+        <MonacoEditor
+          width={this.state.window.w - 47 - treeSize}
+          height={this.state.window.h}
+          language="scs"
+          theme={"scs"}
+          value={content || "/"}
+          onChange={this.onChange.bind(this)}
+          editorWillMount={editorWillMount}
+          editorDidMount={this.editorDidMount}
+        />
+        </div>
       </div>
     );
   }

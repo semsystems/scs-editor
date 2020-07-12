@@ -7,11 +7,10 @@ export const Div = styled('div', {
   shouldForwardProp: prop => ['className', 'children'].indexOf(prop) !== -1
 })(({style}) => style);
 
-// Example: Customising The Header Decorator To Include Icons
 export const Header = ({style, node}) => {
   const iconType = node.children ? 'folder' : 'file-code-o';
   const iconClass = `fa fa-${iconType}`;
-  const iconStyle = {marginRight: '8px', marginLeft: '5px',};
+  const iconStyle = {marginRight: '4px', marginLeft: '5px',};
 
   return (
     <Div style={style.base}>
