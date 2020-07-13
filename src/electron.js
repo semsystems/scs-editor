@@ -1,9 +1,4 @@
 const {app, BrowserWindow, remote, Menu} = require('electron');
-const debug = require('electron-debug');
-
-debug();
-
-console.log(123);
 
 let mainWindow;
 
