@@ -16,10 +16,10 @@ npm install
 
 3. Run the electron and React application in different Terminal tabs:
 ```bash
-npm run electron
+BROWSER=non npm start
 ```
 ```bash
-npm start
+npm run electron
 ```
 
 Please, make sure that `src/electron.js` file has the same URL you ran React application.
